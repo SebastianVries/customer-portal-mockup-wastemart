@@ -91,6 +91,8 @@ const DATA_STATUS = {
   nextSync:         "Mon 16 Mar 2026 at 06:00",
   portalTime:       "Mon 16 Mar 2026 at 12:30",
 };
+
+const TABS = ["Overview", "Transaction History", "Documents", "Invoices", "Reports & Stats", "Support"];
 const NAV  = [
   { icon:"◉", label:"My Account" },
   { icon:"📅", label:"Schedule"  },
