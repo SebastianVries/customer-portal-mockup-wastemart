@@ -10,6 +10,7 @@ const FontLoader = () => (
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #c8dfc9; border-radius: 3px; }
+    table td, table th { white-space: nowrap; }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -82,7 +83,14 @@ const CONTACTS = [
   { name:"Operations Desk",   role:"Service Issues",     phone:"+27 21 555 0199", email:"ops@wastemart.co.za"     },
 ];
 
-const TABS = ["Overview", "Transaction History", "Documents", "Invoices", "Support"];
+// ── Data freshness ────────────────────────────────────────────────────────────
+const DATA_STATUS = {
+  lastTransaction:  "Fri 13 Mar 2026 at 17:45",
+  lastTransactionShort: "Fri 13 Mar, 17:45",
+  invoicedTo:       "15 Mar 2026",
+  nextSync:         "Mon 16 Mar 2026 at 06:00",
+  portalTime:       "Mon 16 Mar 2026 at 12:30",
+};
 const NAV  = [
   { icon:"◉", label:"My Account" },
   { icon:"📅", label:"Schedule"  },
@@ -124,7 +132,7 @@ function SectionTitle({ children, action }) {
 
 function Card({ children, style={} }) {
   return (
-    <div className="fadeUp" style={{ background:G.white, borderRadius:14, padding:"20px 22px",
+    <div className="fadeUp" style={{ background:G.white, borderRadius:14, padding:"16px 14px",
       boxShadow:"0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04)",
       overflow:"hidden", minWidth:0, ...style }}>
       {children}
@@ -144,7 +152,7 @@ function DownloadBtn({ label="D-Note" }) {
 }
 
 // ── TAB CONTENT ───────────────────────────────────────────────────────────────
-function OverviewTab() {
+function OverviewTab({ onBook }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
 
@@ -153,7 +161,7 @@ function OverviewTab() {
         <div style={{ fontSize:11, fontWeight:700, opacity:0.65, letterSpacing:1.5, marginBottom:8, fontFamily:"Outfit" }}>NEXT SCHEDULED SERVICE</div>
         <div style={{ fontSize:22, fontWeight:800, fontFamily:"Outfit", marginBottom:4 }}>Monday, 16 March 2026</div>
         <div style={{ opacity:0.8, fontSize:13, marginBottom:16 }}>General Waste + Recycling · 240L Green &amp; Yellow — Bay 1</div>
-        <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+        <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:16 }}>
           <div style={{ background:"rgba(255,255,255,0.15)", borderRadius:8, padding:"8px 14px", fontSize:12 }}>
             <div style={{ opacity:0.65, fontSize:10, fontWeight:700, letterSpacing:1 }}>SERVICES THIS MONTH</div>
             <div style={{ fontWeight:800, fontSize:18, fontFamily:"Outfit" }}>6</div>
@@ -167,6 +175,12 @@ function OverviewTab() {
             <div style={{ fontWeight:800, fontSize:18, fontFamily:"Outfit", color:"#FFCDD2" }}>R 4,850</div>
           </div>
         </div>
+        <button onClick={onBook} className="btn" style={{
+          background:G.lime, color:G.dark, border:"none", borderRadius:8,
+          padding:"10px 20px", fontSize:13, fontWeight:800, cursor:"pointer",
+          display:"inline-flex", alignItems:"center", gap:6 }}>
+          📅 Book an Additional Service
+        </button>
       </Card>
 
       {/* Upcoming + recent side by side */}
@@ -175,7 +189,7 @@ function OverviewTab() {
         {/* Upcoming */}
         <Card style={{ flex:"2 1 300px" }}>
           <SectionTitle action={<span style={{ fontSize:11, color:G.muted }}>Next 14 days</span>}>Upcoming Services</SectionTitle>
-          <div style={{ overflowX:"auto", margin:"0 -22px", padding:"0 22px" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:480 }}>
+          <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
             <thead>
               <tr>
                 {["Date","Service","Bin / Location","Status"].map(h => (
@@ -228,7 +242,7 @@ function OverviewTab() {
       {/* Recent activity */}
       <Card>
         <SectionTitle action={<DownloadBtn label="Export CSV"/>}>Recent Collections</SectionTitle>
-        <div style={{ overflowX:"auto", margin:"0 -22px", padding:"0 22px" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:480 }}>
+        <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
           <thead>
             <tr>
               {["Ref","Service Type","Bin","Scheduled","Actual","Status","D-Note"].map(h => (
@@ -280,7 +294,7 @@ function HistoryTab() {
           </div>
         </div>
 
-        <div style={{ overflowX:"auto", margin:"0 -22px", padding:"0 22px" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:480 }}>
+        <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
           <thead>
             <tr>
               {["Ref","Service Type","Bin / Location","Scheduled","Actual","Status","Reason","D-Note"].map(h => (
@@ -430,7 +444,7 @@ function InvoicesTab() {
 
       <Card>
         <SectionTitle action={<DownloadBtn label="Export Statement"/>}>Invoice History</SectionTitle>
-        <div style={{ overflowX:"auto", margin:"0 -22px", padding:"0 22px" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:480 }}>
+        <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
           <thead>
             <tr>
               {["Invoice #","Date","Due Date","Description","Amount","Status",""].map(h => (
@@ -586,11 +600,401 @@ function SupportTab() {
   );
 }
 
+// ── Data Freshness Bar ────────────────────────────────────────────────────────
+function DataFreshnessBar() {
+  return (
+    <div style={{ background:"#F0F4F0", borderBottom:`1px solid ${G.hairline}`,
+      padding:"6px 16px", display:"flex", gap:6, alignItems:"center", flexWrap:"wrap",
+      fontSize:11, color:G.muted, flexShrink:0 }}>
+      <span style={{ display:"inline-flex", alignItems:"center", gap:4 }}>
+        <span style={{ width:7, height:7, borderRadius:"50%", background:G.bright, display:"inline-block" }}/>
+        <strong style={{ color:G.slate }}>Data current as of:</strong>&nbsp;{DATA_STATUS.lastTransactionShort}
+      </span>
+      <span style={{ color:G.hairline, padding:"0 4px" }}>|</span>
+      <span><strong style={{ color:G.slate }}>Invoiced to:</strong>&nbsp;{DATA_STATUS.invoicedTo}</span>
+      <span style={{ color:G.hairline, padding:"0 4px" }}>|</span>
+      <span>Next refresh: {DATA_STATUS.nextSync}</span>
+    </div>
+  );
+}
+
+// ── Booking Modal ─────────────────────────────────────────────────────────────
+function BookingModal({ onClose }) {
+  const [step, setStep] = useState(1);
+  const [type, setType] = useState("");
+  const [date, setDate] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const serviceTypes = [
+    { icon:"🗑️", label:"General Waste Collection" },
+    { icon:"♻️", label:"Recycling Collection"      },
+    { icon:"🧹", label:"Bin Clean"                 },
+    { icon:"➕", label:"Additional Bin Request"    },
+    { icon:"📦", label:"Bin Removal"               },
+    { icon:"⚠️", label:"Hazardous Waste Pickup"    },
+  ];
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.55)", zIndex:1000,
+      display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
+      onClick={e => { if(e.target===e.currentTarget) onClose(); }}>
+      <div style={{ background:G.white, borderRadius:16, width:"100%", maxWidth:440,
+        boxShadow:"0 24px 60px rgba(0,0,0,0.25)", overflow:"hidden" }}>
+
+        {/* Header */}
+        <div style={{ background:`linear-gradient(135deg, ${G.dark}, ${G.mid})`, padding:"18px 20px",
+          display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div>
+            <div style={{ color:"rgba(255,255,255,0.6)", fontSize:10, fontWeight:700, letterSpacing:1.5, marginBottom:3 }}>
+              BOOK A SERVICE
+            </div>
+            <div style={{ color:G.white, fontSize:16, fontWeight:800, fontFamily:"Outfit" }}>
+              {step===1 ? "Select Service Type" : step===2 ? "Choose a Date" : "Confirm Booking"}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background:"rgba(255,255,255,0.15)", border:"none",
+            borderRadius:8, color:"#fff", fontSize:18, width:34, height:34, cursor:"pointer",
+            display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+        </div>
+
+        {/* Progress */}
+        <div style={{ display:"flex", background:"#f5f5f5" }}>
+          {["Service","Date","Confirm"].map((s,i) => (
+            <div key={s} style={{ flex:1, padding:"8px", textAlign:"center", fontSize:10, fontWeight:700,
+              color: step>i ? G.mid : step===i+1 ? G.charcoal : G.muted,
+              borderBottom: step===i+1 ? `2.5px solid ${G.mid}` : "2.5px solid transparent" }}>
+              {i+1}. {s}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding:"20px" }}>
+          {step===1 && (
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {serviceTypes.map(s => (
+                <div key={s.label} onClick={() => setType(s.label)} style={{
+                  display:"flex", alignItems:"center", gap:12, padding:"11px 14px",
+                  borderRadius:8, cursor:"pointer", transition:"all 0.15s",
+                  border:`2px solid ${type===s.label ? G.mid : G.hairline}`,
+                  background: type===s.label ? G.pale : G.white }}>
+                  <span style={{ fontSize:18 }}>{s.icon}</span>
+                  <span style={{ fontSize:13, fontWeight: type===s.label ? 700 : 500,
+                    color: type===s.label ? G.mid : G.charcoal }}>{s.label}</span>
+                  {type===s.label && <span style={{ marginLeft:"auto", color:G.mid, fontWeight:700 }}>✓</span>}
+                </div>
+              ))}
+              <button onClick={() => { if(type) setStep(2); }} className="btn" style={{
+                marginTop:8, background: type ? G.mid : G.paleMid, color: type ? G.white : G.muted,
+                border:"none", borderRadius:8, padding:"11px", fontSize:13, fontWeight:700,
+                cursor: type ? "pointer" : "default", width:"100%" }}>
+                Next →
+              </button>
+            </div>
+          )}
+
+          {step===2 && (
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              <div style={{ fontSize:12, color:G.muted, marginBottom:4 }}>
+                <strong style={{ color:G.charcoal }}>Service:</strong> {type}
+              </div>
+              <div>
+                <label style={{ fontSize:11, fontWeight:700, color:G.muted, letterSpacing:0.8,
+                  textTransform:"uppercase", display:"block", marginBottom:6 }}>Preferred Date</label>
+                <input type="date" value={date} onChange={e => setDate(e.target.value)}
+                  style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
+                    padding:"10px 12px", fontSize:13, color:G.charcoal, outline:"none",
+                    fontFamily:"DM Sans, sans-serif" }}/>
+              </div>
+              <div>
+                <label style={{ fontSize:11, fontWeight:700, color:G.muted, letterSpacing:0.8,
+                  textTransform:"uppercase", display:"block", marginBottom:6 }}>Notes (optional)</label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                  placeholder="Access instructions, bin location, special requirements..."
+                  style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
+                    padding:"10px 12px", fontSize:12, color:G.charcoal, resize:"vertical",
+                    minHeight:72, outline:"none", fontFamily:"DM Sans, sans-serif" }}/>
+              </div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={() => setStep(1)} className="btn" style={{
+                  flex:1, background:G.pale, color:G.mid, border:`1px solid ${G.paleMid}`,
+                  borderRadius:8, padding:"10px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
+                  ← Back
+                </button>
+                <button onClick={() => { if(date) setStep(3); }} className="btn" style={{
+                  flex:2, background: date ? G.mid : G.paleMid, color: date ? G.white : G.muted,
+                  border:"none", borderRadius:8, padding:"10px", fontSize:13, fontWeight:700,
+                  cursor: date ? "pointer" : "default" }}>
+                  Review →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step===3 && (
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              <div style={{ background:G.pale, borderRadius:10, padding:"14px 16px",
+                border:`1px solid ${G.paleMid}` }}>
+                <div style={{ fontSize:11, fontWeight:700, color:G.muted, textTransform:"uppercase",
+                  letterSpacing:0.8, marginBottom:10 }}>Booking Summary</div>
+                {[
+                  { label:"Service",  val: type },
+                  { label:"Date",     val: date },
+                  { label:"Account",  val: "ENV-00142 · Environ Skincare" },
+                  { label:"Notes",    val: notes || "None" },
+                ].map(r => (
+                  <div key={r.label} style={{ display:"flex", gap:12, marginBottom:7, fontSize:12 }}>
+                    <span style={{ color:G.muted, width:60, flexShrink:0 }}>{r.label}</span>
+                    <span style={{ color:G.charcoal, fontWeight:600 }}>{r.val}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize:11, color:G.muted, textAlign:"center" }}>
+                WasteMart will confirm this booking within 1 business day.
+              </div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={() => setStep(2)} className="btn" style={{
+                  flex:1, background:G.pale, color:G.mid, border:`1px solid ${G.paleMid}`,
+                  borderRadius:8, padding:"10px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
+                  ← Back
+                </button>
+                <button onClick={onClose} className="btn" style={{
+                  flex:2, background:G.mid, color:G.white, border:"none",
+                  borderRadius:8, padding:"10px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                  ✓ Submit Booking
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Reports & Stats Tab ───────────────────────────────────────────────────────
+function ReportsTab() {
+  const [fromDate, setFromDate] = useState("2025-10-01");
+  const [toDate,   setToDate]   = useState("2026-03-13");
+  const [generated, setGenerated] = useState(true);
+
+  const wasteData = [
+    { month:"Oct 25", general:2800, recycling:1200, hazardous:280, organic:520 },
+    { month:"Nov 25", general:2650, recycling:1350, hazardous:210, organic:490 },
+    { month:"Dec 25", general:1800, recycling:980,  hazardous:150, organic:320 },
+    { month:"Jan 26", general:2400, recycling:1100, hazardous:240, organic:435 },
+    { month:"Feb 26", general:2750, recycling:1420, hazardous:290, organic:510 },
+    { month:"Mar 26", general:1200, recycling:680,  hazardous:120, organic:240 },
+  ];
+
+  const totals = wasteData.reduce((acc, m) => ({
+    general:   acc.general   + m.general,
+    recycling: acc.recycling + m.recycling,
+    hazardous: acc.hazardous + m.hazardous,
+    organic:   acc.organic   + m.organic,
+  }), { general:0, recycling:0, hazardous:0, organic:0 });
+
+  const totalAll = totals.general + totals.recycling + totals.hazardous + totals.organic;
+
+  const streams = [
+    { label:"General Waste",  key:"general",   color:G.slate,   icon:"🗑️" },
+    { label:"Recycling",      key:"recycling",  color:G.bright,  icon:"♻️" },
+    { label:"Hazardous",      key:"hazardous",  color:"#E65100", icon:"⚠️" },
+    { label:"Food / Organic", key:"organic",    color:G.amber,   icon:"🌿" },
+  ];
+
+  // Simple bar chart using divs
+  const maxMonth = Math.max(...wasteData.map(m => m.general + m.recycling + m.hazardous + m.organic));
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+
+      {/* Date range filter */}
+      <Card>
+        <SectionTitle>Select Report Period</SectionTitle>
+        <div style={{ display:"flex", gap:12, flexWrap:"wrap", alignItems:"flex-end" }}>
+          <div style={{ flex:"1 1 140px" }}>
+            <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
+              textTransform:"uppercase", display:"block", marginBottom:5 }}>From</label>
+            <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
+              style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
+                padding:"9px 12px", fontSize:13, color:G.charcoal, outline:"none", fontFamily:"DM Sans, sans-serif" }}/>
+          </div>
+          <div style={{ flex:"1 1 140px" }}>
+            <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
+              textTransform:"uppercase", display:"block", marginBottom:5 }}>To</label>
+            <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
+              style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
+                padding:"9px 12px", fontSize:13, color:G.charcoal, outline:"none", fontFamily:"DM Sans, sans-serif" }}/>
+          </div>
+          <button onClick={() => setGenerated(true)} className="btn" style={{
+            background:G.mid, color:G.white, border:"none", borderRadius:8,
+            padding:"10px 20px", fontSize:13, fontWeight:700, cursor:"pointer", flexShrink:0 }}>
+            Generate Report
+          </button>
+          <button className="btn" style={{
+            background:G.pale, color:G.mid, border:`1px solid ${G.paleMid}`, borderRadius:8,
+            padding:"10px 16px", fontSize:12, fontWeight:700, cursor:"pointer", flexShrink:0 }}>
+            ↓ Export PDF
+          </button>
+        </div>
+        <div style={{ marginTop:10, fontSize:11, color:G.muted }}>
+          Data current as of <strong style={{ color:G.slate }}>{DATA_STATUS.lastTransactionShort}</strong>
+          {" · "}Invoiced to <strong style={{ color:G.slate }}>{DATA_STATUS.invoicedTo}</strong>
+        </div>
+      </Card>
+
+      {generated && <>
+
+        {/* Summary KPIs */}
+        <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+          {streams.map(s => (
+            <div key={s.key} style={{ flex:"1 1 120px", background:G.white, borderRadius:12,
+              padding:"14px 16px", boxShadow:"0 1px 4px rgba(0,0,0,0.07)",
+              borderLeft:`4px solid ${s.color}` }}>
+              <div style={{ fontSize:10, fontWeight:700, color:G.muted, textTransform:"uppercase",
+                letterSpacing:0.8, marginBottom:5 }}>{s.icon} {s.label}</div>
+              <div style={{ fontSize:22, fontWeight:800, color:G.charcoal, fontFamily:"Outfit" }}>
+                {totals[s.key].toLocaleString()}
+              </div>
+              <div style={{ fontSize:11, color:G.muted }}>kg total</div>
+              <div style={{ marginTop:6, fontSize:11, fontWeight:700,
+                color:s.color }}>{Math.round(totals[s.key]/totalAll*100)}% of waste</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bar chart */}
+        <Card>
+          <SectionTitle>Monthly Waste Volume by Type</SectionTitle>
+          <div style={{ display:"flex", gap:10, marginBottom:12, flexWrap:"wrap" }}>
+            {streams.map(s => (
+              <div key={s.key} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11 }}>
+                <div style={{ width:10, height:10, borderRadius:2, background:s.color }}/>
+                <span style={{ color:G.muted }}>{s.label}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ display:"flex", gap:6, alignItems:"flex-end", height:180 }}>
+            {wasteData.map(m => {
+              const total = m.general + m.recycling + m.hazardous + m.organic;
+              const pct = total / maxMonth;
+              return (
+                <div key={m.month} style={{ flex:1, display:"flex", flexDirection:"column",
+                  alignItems:"center", gap:4 }}>
+                  <div style={{ width:"100%", display:"flex", flexDirection:"column",
+                    justifyContent:"flex-end", height:152, gap:1 }}>
+                    {streams.map(s => (
+                      <div key={s.key} style={{
+                        width:"100%", background:s.color, opacity:0.85,
+                        height: `${(m[s.key]/maxMonth)*148}px`,
+                        borderRadius: s.key==="general" ? "3px 3px 0 0" : 0,
+                        minHeight: m[s.key] > 0 ? 2 : 0,
+                        transition:"height 0.5s ease"
+                      }}/>
+                    )).reverse()}
+                  </div>
+                  <div style={{ fontSize:10, color:G.muted, textAlign:"center" }}>{m.month}</div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Recycling rate */}
+        <Card>
+          <SectionTitle>Recycling Rate by Month</SectionTitle>
+          <div style={{ display:"flex", gap:6, alignItems:"flex-end", height:120 }}>
+            {wasteData.map(m => {
+              const total = m.general + m.recycling + m.hazardous + m.organic;
+              const rate = Math.round(m.recycling / total * 100);
+              return (
+                <div key={m.month} style={{ flex:1, display:"flex", flexDirection:"column",
+                  alignItems:"center", gap:4 }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:G.mid }}>{rate}%</div>
+                  <div style={{ width:"100%", background:G.hairline, borderRadius:4, height:80,
+                    display:"flex", flexDirection:"column", justifyContent:"flex-end", overflow:"hidden" }}>
+                    <div style={{ width:"100%", background:G.bright, borderRadius:"3px 3px 0 0",
+                      height:`${rate}%`, transition:"height 0.5s ease" }}/>
+                  </div>
+                  <div style={{ fontSize:10, color:G.muted }}>{m.month}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop:12, padding:"10px 12px", background:G.pale, borderRadius:8,
+            fontSize:12, display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:8 }}>
+            <span style={{ color:G.charcoal }}>
+              Period average: <strong style={{ color:G.mid }}>
+                {Math.round(totals.recycling / totalAll * 100)}% recycled
+              </strong>
+            </span>
+            <span style={{ color:G.muted }}>
+              Target: <strong>30%</strong>
+            </span>
+          </div>
+        </Card>
+
+        {/* Detailed table */}
+        <Card>
+          <SectionTitle action={<DownloadBtn label="Export CSV"/>}>
+            Monthly Breakdown Detail
+          </SectionTitle>
+          <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
+            <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
+              <thead>
+                <tr>
+                  {["Month","General (kg)","Recycling (kg)","Hazardous (kg)","Organic (kg)","Total (kg)","Recycling %"].map(h => (
+                    <th key={h} style={{ textAlign:"left", padding:"6px 8px", color:G.muted,
+                      fontWeight:700, fontSize:10, textTransform:"uppercase", letterSpacing:0.8,
+                      borderBottom:`2px solid ${G.hairline}` }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {wasteData.map((m, i) => {
+                  const total = m.general + m.recycling + m.hazardous + m.organic;
+                  const rate  = Math.round(m.recycling / total * 100);
+                  return (
+                    <tr key={m.month} className="hover-row" style={{ background: i%2===0 ? G.white : G.bg }}>
+                      <td style={{ padding:"9px 8px", fontWeight:600, color:G.charcoal }}>{m.month}</td>
+                      <td style={{ padding:"9px 8px", color:G.slate }}>{m.general.toLocaleString()}</td>
+                      <td style={{ padding:"9px 8px", color:G.mid, fontWeight:600 }}>{m.recycling.toLocaleString()}</td>
+                      <td style={{ padding:"9px 8px", color:"#E65100" }}>{m.hazardous.toLocaleString()}</td>
+                      <td style={{ padding:"9px 8px", color:G.amber }}>{m.organic.toLocaleString()}</td>
+                      <td style={{ padding:"9px 8px", fontWeight:700, color:G.charcoal }}>{total.toLocaleString()}</td>
+                      <td style={{ padding:"9px 8px" }}>
+                        <span style={{ color: rate>=30 ? G.mid : G.amber, fontWeight:700 }}>{rate}%</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr style={{ borderTop:`2px solid ${G.hairline}`, background:G.pale }}>
+                  <td style={{ padding:"10px 8px", fontWeight:800, color:G.charcoal }}>TOTAL</td>
+                  <td style={{ padding:"10px 8px", fontWeight:700 }}>{totals.general.toLocaleString()}</td>
+                  <td style={{ padding:"10px 8px", fontWeight:700, color:G.mid }}>{totals.recycling.toLocaleString()}</td>
+                  <td style={{ padding:"10px 8px", fontWeight:700, color:"#E65100" }}>{totals.hazardous.toLocaleString()}</td>
+                  <td style={{ padding:"10px 8px", fontWeight:700, color:G.amber }}>{totals.organic.toLocaleString()}</td>
+                  <td style={{ padding:"10px 8px", fontWeight:800, color:G.charcoal }}>{totalAll.toLocaleString()}</td>
+                  <td style={{ padding:"10px 8px", fontWeight:800, color:G.mid }}>
+                    {Math.round(totals.recycling/totalAll*100)}%
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+      </>}
+    </div>
+  );
+}
+
 // ── ROOT ──────────────────────────────────────────────────────────────────────
-export default function App() {
+export default function WastePortal() {
   const [tab, setTab] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -606,12 +1010,20 @@ export default function App() {
     return () => obs.disconnect();
   }, []);
 
-  const tabContent = [<OverviewTab/>, <HistoryTab/>, <DocumentsTab/>, <InvoicesTab/>, <SupportTab/>];
+  const tabContent = [
+    <OverviewTab onBook={() => setShowBooking(true)}/>,
+    <HistoryTab/>,
+    <DocumentsTab/>,
+    <InvoicesTab/>,
+    <ReportsTab/>,
+    <SupportTab/>,
+  ];
 
   return (
     <div ref={containerRef} style={{ display:"flex", height:"100vh", fontFamily:"'DM Sans', sans-serif",
       background:G.bg, overflow:"hidden", position:"relative" }}>
       <FontLoader/>
+      {showBooking && <BookingModal onClose={() => setShowBooking(false)}/>}
 
       {/* Mobile backdrop */}
       {isMobile && sidebarOpen && (
@@ -670,10 +1082,20 @@ export default function App() {
                 borderLeft: tab===i ? `3px solid ${G.lime}` : "3px solid transparent",
                 transition:"all 0.15s",
               }}>
-              <span style={{ fontSize:15 }}>{["🏠","📋","📁","💳","💬"][i]}</span>
+              <span style={{ fontSize:15 }}>{["🏠","📋","📁","💳","📊","💬"][i]}</span>
               {t}
             </div>
           ))}
+          {/* Book a Service CTA in sidebar */}
+          <div style={{ margin:"10px 14px 0" }}>
+            <button onClick={() => { setShowBooking(true); if(isMobile) setSidebarOpen(false); }}
+              className="btn" style={{
+                width:"100%", background:G.lime, color:G.dark, border:"none", borderRadius:8,
+                padding:"10px 14px", fontSize:12, fontWeight:800, cursor:"pointer",
+                display:"flex", alignItems:"center", justifyContent:"center", gap:6 }}>
+              📅 Book a Service
+            </button>
+          </div>
         </nav>
 
         <div style={{ padding:"12px 14px", borderTop:"1px solid rgba(255,255,255,0.1)" }}>
@@ -705,15 +1127,18 @@ export default function App() {
               <span style={{ fontSize:16 }}>♻️</span>
               <span style={{ color:"#fff", fontWeight:800, fontFamily:"Outfit" }}>WasteMart</span>
             </div>
-            <div style={{ width:40, height:40, borderRadius:"50%", background:"rgba(255,255,255,0.15)",
-              display:"flex", alignItems:"center", justifyContent:"center", color:"#fff", fontSize:16 }}>E</div>
+            <button onClick={() => setShowBooking(true)} style={{
+              background:G.lime, border:"none", borderRadius:8, color:G.dark,
+              fontSize:11, fontWeight:800, padding:"7px 10px", cursor:"pointer" }}>
+              📅 Book
+            </button>
           </div>
         )}
 
-        {/* Page header */}
+        {/* Desktop page header */}
         {!isMobile && (
           <div style={{ background:G.white, borderBottom:`1px solid ${G.hairline}`,
-            padding:"16px 28px", display:"flex", justifyContent:"space-between",
+            padding:"14px 28px", display:"flex", justifyContent:"space-between",
             alignItems:"center", flexShrink:0, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
             <div>
               <div style={{ fontSize:10, color:G.muted, letterSpacing:1.2, fontWeight:700, textTransform:"uppercase", marginBottom:2 }}>
@@ -722,15 +1147,19 @@ export default function App() {
               <h2 style={{ fontSize:18, fontWeight:800, color:G.charcoal, fontFamily:"Outfit" }}>{TABS[tab]}</h2>
             </div>
             <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-              <div style={{ fontSize:12, color:G.muted }}>
-                Last updated: <strong style={{ color:G.charcoal }}>Today, 06:30</strong>
-              </div>
+              <button onClick={() => setShowBooking(true)} className="btn" style={{
+                background:G.mid, color:G.white, border:"none", borderRadius:8,
+                padding:"9px 18px", fontSize:13, fontWeight:700, cursor:"pointer",
+                display:"flex", alignItems:"center", gap:6 }}>
+                📅 Book a Service
+              </button>
               <div style={{ width:34, height:34, borderRadius:"50%", background:G.pale,
                 display:"flex", alignItems:"center", justifyContent:"center",
                 fontWeight:800, color:G.mid, fontSize:14, cursor:"pointer" }}>E</div>
             </div>
           </div>
         )}
+        <DataFreshnessBar/>
 
         {/* Tab pills (mobile) */}
         {isMobile && (
