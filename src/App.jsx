@@ -25,38 +25,15 @@ const FontLoader = () => (
   `}</style>
 );
 
-// ── Brand — Green (default) ───────────────────────────────────────────────────
-const G = {
-  dark:    "#1B5E20",
-  mid:     "#2E7D32",
-  bright:  "#43A047",
-  light:   "#81C784",
-  pale:    "#E8F5E9",
-  paleMid: "#C8E6C9",
-  lime:    "#8BC34A",
-  slate:   "#37474F",
-  charcoal:"#263238",
-  muted:   "#78909C",
-  hairline:"#ECEFF1",
-  white:   "#FFFFFF",
-  bg:      "#F5F7F5",
-  amber:   "#F57F17",
-  amberPale:"#FFF8E1",
-  red:     "#C62828",
-  redPale: "#FFEBEE",
-  blue:    "#1565C0",
-  bluePale:"#E3F2FD",
-};
-
 // ── Brand — Teal (WasteMart #14A697) ─────────────────────────────────────────
-const TEAL = {
+const G = {
   dark:    "#0A7066",
   mid:     "#14A697",
   bright:  "#1BBFB0",
   light:   "#5FD4CA",
   pale:    "#E0F5F3",
   paleMid: "#B2E8E4",
-  lime:    "#F0A500",      // warm amber accent replacing lime
+  lime:    "#F0A500",      // warm amber accent
   slate:   "#2C3E50",
   charcoal:"#1A2530",
   muted:   "#6B8B9E",
@@ -1316,8 +1293,7 @@ export default function WastePortal() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
-  const [theme, setTheme] = useState("green"); // "green" | "teal"
-  const T = theme === "teal" ? TEAL : G;
+  const T = G; // single WasteMart teal scheme
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -1424,29 +1400,6 @@ export default function WastePortal() {
         </nav>
 
         <div style={{ padding:"12px 14px", borderTop:"1px solid rgba(255,255,255,0.1)" }}>
-          {/* Theme switcher */}
-          <div style={{ marginBottom:10 }}>
-            <div style={{ fontSize:9, fontWeight:700, color:"rgba(255,255,255,0.4)",
-              letterSpacing:1.2, textTransform:"uppercase", marginBottom:6, textAlign:"center" }}>
-              Colour Theme
-            </div>
-            <div style={{ display:"flex", gap:6, background:"rgba(0,0,0,0.2)", borderRadius:8, padding:4 }}>
-              <button onClick={() => setTheme("green")} style={{
-                flex:1, border:"none", borderRadius:6, padding:"6px 4px", cursor:"pointer",
-                fontSize:10, fontWeight:700, transition:"all 0.2s",
-                background: theme==="green" ? "#2E7D32" : "transparent",
-                color: theme==="green" ? "#fff" : "rgba(255,255,255,0.45)" }}>
-                🌿 Green
-              </button>
-              <button onClick={() => setTheme("teal")} style={{
-                flex:1, border:"none", borderRadius:6, padding:"6px 4px", cursor:"pointer",
-                fontSize:10, fontWeight:700, transition:"all 0.2s",
-                background: theme==="teal" ? "#14A697" : "transparent",
-                color: theme==="teal" ? "#fff" : "rgba(255,255,255,0.45)" }}>
-                🩵 Teal
-              </button>
-            </div>
-          </div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,0.35)", textAlign:"center" }}>
             Powered by GEMIS · gemis.co.za
           </div>
