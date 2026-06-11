@@ -885,6 +885,63 @@ function BookingModal({ onClose }) {
   );
 }
 
+// ── Donut / Pie chart (SVG) ───────────────────────────────────────────────────
+function PieChart({ data, size = 180, centerTop, centerBottom, G }) {
+  const slices = data.filter(d => d.value > 0);
+  const total = slices.reduce((s, d) => s + d.value, 0) || 1;
+  const r = size / 2;
+  const hole = r * 0.58;
+  let cursor = -Math.PI / 2; // start at 12 o'clock
+
+  const arcs = slices.map(d => {
+    const frac = d.value / total;
+    const start = cursor;
+    const end = cursor + frac * Math.PI * 2;
+    cursor = end;
+    const large = end - start > Math.PI ? 1 : 0;
+    const x1 = r + r * Math.cos(start), y1 = r + r * Math.sin(start);
+    const x2 = r + r * Math.cos(end),   y2 = r + r * Math.sin(end);
+    const path = `M ${r} ${r} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
+    return { ...d, frac, path };
+  });
+  const onlySlice = slices.length === 1 ? slices[0] : null;
+
+  return (
+    <div style={{ display:"flex", gap:18, alignItems:"center", flexWrap:"wrap" }}>
+      <div style={{ position:"relative", width:size, height:size, flexShrink:0 }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display:"block" }}>
+          {onlySlice
+            ? <circle cx={r} cy={r} r={r} fill={onlySlice.color} opacity={0.9}/>
+            : arcs.map(a => <path key={a.label} d={a.path} fill={a.color} opacity={0.9}/>)}
+          {/* donut hole */}
+          <circle cx={r} cy={r} r={hole} fill={G.white}/>
+        </svg>
+        {(centerTop || centerBottom) && (
+          <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column",
+            alignItems:"center", justifyContent:"center", pointerEvents:"none" }}>
+            {centerTop && <div style={{ fontSize:22, fontWeight:800, color:G.charcoal,
+              fontFamily:"Outfit", lineHeight:1.1 }}>{centerTop}</div>}
+            {centerBottom && <div style={{ fontSize:10, fontWeight:700, color:G.muted,
+              textTransform:"uppercase", letterSpacing:0.6 }}>{centerBottom}</div>}
+          </div>
+        )}
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:7, flex:"1 1 160px", minWidth:160 }}>
+        {data.map(d => (
+          <div key={d.label} style={{ display:"flex", alignItems:"center", gap:8, fontSize:12 }}>
+            <div style={{ width:11, height:11, borderRadius:3, background:d.color, flexShrink:0 }}/>
+            <span style={{ color:G.charcoal, flex:1 }}>{d.label}</span>
+            <span style={{ color:G.muted }}>{d.value.toLocaleString()}</span>
+            <span style={{ color:G.slate, fontWeight:700, width:42, textAlign:"right" }}>
+              {Math.round(d.value / total * 100)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Reports & Stats Tab ───────────────────────────────────────────────────────
 function ReportsTab() {
   const G = useTheme();
@@ -922,9 +979,6 @@ function ReportsTab() {
     { label:"Food / Organic", key:"organic",    color:G.amber,   icon:"🌿" },
     { label:"Glass",          key:"glass",      color:"#5C6BC0", icon:"🫙" },
   ];
-
-  // Simple bar chart using divs
-  const maxMonth = Math.max(...wasteData.map(m => m.general + m.recycling + m.hazardous + m.organic));
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
@@ -988,62 +1042,29 @@ function ReportsTab() {
           ))}
         </div>
 
-        {/* Bar chart */}
+        {/* Waste composition pie */}
         <Card>
-          <SectionTitle>Monthly Waste Volume by Type</SectionTitle>
-          <div style={{ display:"flex", gap:10, marginBottom:12, flexWrap:"wrap" }}>
-            {streams.map(s => (
-              <div key={s.key} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11 }}>
-                <div style={{ width:10, height:10, borderRadius:2, background:s.color }}/>
-                <span style={{ color:G.muted }}>{s.label}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{ display:"flex", gap:6, alignItems:"flex-end", height:180 }}>
-            {wasteData.map(m => {
-              return (
-                <div key={m.month} style={{ flex:1, display:"flex", flexDirection:"column",
-                  alignItems:"center", gap:4 }}>
-                  <div style={{ width:"100%", display:"flex", flexDirection:"column",
-                    justifyContent:"flex-end", height:152, gap:1 }}>
-                    {streams.map(s => (
-                      <div key={s.key} style={{
-                        width:"100%", background:s.color, opacity:0.85,
-                        height: `${(m[s.key]/maxMonth)*148}px`,
-                        borderRadius: s.key==="general" ? "3px 3px 0 0" : 0,
-                        minHeight: m[s.key] > 0 ? 2 : 0,
-                        transition:"height 0.5s ease"
-                      }}/>
-                    )).reverse()}
-                  </div>
-                  <div style={{ fontSize:10, color:G.muted, textAlign:"center" }}>{m.month}</div>
-                </div>
-              );
-            })}
-          </div>
+          <SectionTitle>Waste Composition by Type</SectionTitle>
+          <PieChart
+            G={G}
+            centerTop={`${(totalAll/1000).toFixed(1)}t`}
+            centerBottom="total"
+            data={streams.map(s => ({ label:s.label, value:totals[s.key], color:s.color }))}
+          />
         </Card>
 
         {/* Recycling rate */}
         <Card>
-          <SectionTitle>Recycling Rate by Month</SectionTitle>
-          <div style={{ display:"flex", gap:6, alignItems:"flex-end", height:120 }}>
-            {wasteData.map(m => {
-              const total = m.general + m.recycling + m.hazardous + m.organic;
-              const rate = Math.round(m.recycling / total * 100);
-              return (
-                <div key={m.month} style={{ flex:1, display:"flex", flexDirection:"column",
-                  alignItems:"center", gap:4 }}>
-                  <div style={{ fontSize:10, fontWeight:700, color:G.mid }}>{rate}%</div>
-                  <div style={{ width:"100%", background:G.hairline, borderRadius:4, height:80,
-                    display:"flex", flexDirection:"column", justifyContent:"flex-end", overflow:"hidden" }}>
-                    <div style={{ width:"100%", background:G.bright, borderRadius:"3px 3px 0 0",
-                      height:`${rate}%`, transition:"height 0.5s ease" }}/>
-                  </div>
-                  <div style={{ fontSize:10, color:G.muted }}>{m.month}</div>
-                </div>
-              );
-            })}
-          </div>
+          <SectionTitle>Recycling Rate</SectionTitle>
+          <PieChart
+            G={G}
+            centerTop={`${Math.round(totals.recycling / totalAll * 100)}%`}
+            centerBottom="recycled"
+            data={[
+              { label:"Recycled",    value:totals.recycling,            color:G.bright },
+              { label:"Other waste", value:totalAll - totals.recycling, color:G.hairline },
+            ]}
+          />
           <div style={{ marginTop:12, padding:"10px 12px", background:G.pale, borderRadius:8,
             fontSize:12, display:"flex", justifyContent:"space-between", flexWrap:"wrap", gap:8 }}>
             <span style={{ color:G.charcoal }}>
