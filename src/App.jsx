@@ -1264,6 +1264,7 @@ export default function WastePortal() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showBooking, setShowBooking] = useState(false);
+  const [acctOpen, setAcctOpen] = useState(false);
   const T = G; // single WasteMart teal scheme
   const containerRef = useRef(null);
 
@@ -1333,24 +1334,29 @@ export default function WastePortal() {
           {/* Customer badge */}
           <div style={{ background:"rgba(255,255,255,0.08)", borderRadius:8, padding:"10px 12px",
             border:"1px solid rgba(255,255,255,0.12)" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-              <div style={{ width:26, height:26, borderRadius:"50%", background:G.lime,
-                display:"flex", alignItems:"center", justifyContent:"center", fontSize:13 }}>E</div>
-              <div style={{ color:"#fff", fontSize:12, fontWeight:700 }}>Wastemart CP Prototype</div>
+            <div onClick={() => setAcctOpen(o => !o)} style={{ cursor:"pointer" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                <div style={{ width:26, height:26, borderRadius:"50%", background:G.lime,
+                  display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, flexShrink:0 }}>E</div>
+                <div style={{ color:"#fff", fontSize:12, fontWeight:700, flex:1, minWidth:0, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>Wastemart CP Prototype</div>
+                <span style={{ color:"rgba(255,255,255,0.45)", fontSize:10, transform: acctOpen ? "rotate(180deg)" : "rotate(0deg)", transition:"transform 0.2s" }}>▼</span>
+              </div>
+              <div style={{ fontSize:10, color:"rgba(255,255,255,0.45)", letterSpacing:0.5 }}>Account WCP-00001</div>
             </div>
-            <div style={{ fontSize:10, color:"rgba(255,255,255,0.45)", letterSpacing:0.5 }}>Account WCP-00001</div>
-            <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid rgba(255,255,255,0.12)", display:"flex", flexDirection:"column", gap:8 }}>
-              {[
-                { label:"Contract", val:"Commercial — Monthly" },
-                { label:"Site", val:"Wastemart CP Prototype, Ndabeni" },
-                { label:"Next Invoice", val:"01 Apr 2026" },
-              ].map(r => (
-                <div key={r.label}>
-                  <div style={{ fontSize:8, fontWeight:700, color:"rgba(255,255,255,0.4)", letterSpacing:0.8, textTransform:"uppercase", marginBottom:1 }}>{r.label}</div>
-                  <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.85)" }}>{r.val}</div>
-                </div>
-              ))}
-            </div>
+            {acctOpen && (
+              <div style={{ marginTop:10, paddingTop:10, borderTop:"1px solid rgba(255,255,255,0.12)", display:"flex", flexDirection:"column", gap:8 }}>
+                {[
+                  { label:"Contract", val:"Commercial — Monthly" },
+                  { label:"Site", val:"Wastemart CP Prototype, Ndabeni" },
+                  { label:"Next Invoice", val:"01 Apr 2026" },
+                ].map(r => (
+                  <div key={r.label}>
+                    <div style={{ fontSize:8, fontWeight:700, color:"rgba(255,255,255,0.4)", letterSpacing:0.8, textTransform:"uppercase", marginBottom:1 }}>{r.label}</div>
+                    <div style={{ fontSize:11, fontWeight:600, color:"rgba(255,255,255,0.85)" }}>{r.val}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
