@@ -1094,13 +1094,9 @@ function PieChart({ data, size = 180, centerTop, centerBottom, G }) {
 // ── Reports & Stats Tab ───────────────────────────────────────────────────────
 function ReportsTab() {
   const G = useTheme();
-  const [sub, setSub] = useState(0);
   const [fromDate, setFromDate] = useState("2025-10-01");
   const [toDate,   setToDate]   = useState("2026-03-13");
   const [generated, setGenerated] = useState(true);
-  const [reqFormat, setReqFormat] = useState("PDF");
-  const [reqEmail,  setReqEmail]  = useState("");
-  const [reqSent,   setReqSent]   = useState(false);
 
   const wasteData = [
     { month:"Oct 25", general:2800, recycling:1200, hazardous:280, organic:520, glass:340 },
@@ -1131,10 +1127,6 @@ function ReportsTab() {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-
-      <SubTabs tabs={["View on screen","Request report"]} active={sub} onChange={setSub}/>
-
-      {sub===0 && <>
 
       {/* Date range filter */}
       <Card>
@@ -1281,70 +1273,6 @@ function ReportsTab() {
 
       </>}
 
-      </>}
-
-      {sub===1 && (
-      <Card>
-        <SectionTitle>Request a Report</SectionTitle>
-        <p style={{ fontSize:12, color:G.muted, marginBottom:18 }}>
-          Generate a report for a chosen period and have it exported or emailed to you. WasteMart will prepare it and send it through.
-        </p>
-        {!reqSent ? (
-          <div style={{ display:"flex", flexDirection:"column", gap:14, maxWidth:460 }}>
-            <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
-              <div style={{ flex:"1 1 140px" }}>
-                <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
-                  textTransform:"uppercase", display:"block", marginBottom:5 }}>From</label>
-                <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-                  style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
-                    padding:"9px 12px", fontSize:13, color:G.charcoal, outline:"none", fontFamily:"Open Sans, sans-serif" }}/>
-              </div>
-              <div style={{ flex:"1 1 140px" }}>
-                <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
-                  textTransform:"uppercase", display:"block", marginBottom:5 }}>To</label>
-                <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-                  style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
-                    padding:"9px 12px", fontSize:13, color:G.charcoal, outline:"none", fontFamily:"Open Sans, sans-serif" }}/>
-              </div>
-            </div>
-            <div>
-              <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
-                textTransform:"uppercase", display:"block", marginBottom:6 }}>Format</label>
-              <div style={{ display:"flex", gap:8 }}>
-                {["PDF","Excel (CSV)"].map(f => (
-                  <button key={f} onClick={() => setReqFormat(f)} className="btn" style={{
-                    border:"none", borderRadius:8, padding:"8px 16px", fontSize:12, fontWeight:700, cursor:"pointer",
-                    background: reqFormat===f ? G.mid : G.pale, color: reqFormat===f ? G.white : G.mid }}>
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
-                textTransform:"uppercase", display:"block", marginBottom:6 }}>Email report to</label>
-              <input type="email" value={reqEmail} onChange={e => setReqEmail(e.target.value)}
-                placeholder="you@company.co.za"
-                style={{ width:"100%", border:`1px solid ${G.hairline}`, borderRadius:8,
-                  padding:"10px 12px", fontSize:13, color:G.charcoal, outline:"none", fontFamily:"Open Sans, sans-serif" }}/>
-            </div>
-            <button onClick={() => setReqSent(true)} className="btn" style={{
-              background:G.mid, color:G.white, border:"none", borderRadius:8,
-              padding:"11px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
-              Request Report
-            </button>
-          </div>
-        ) : (
-          <div style={{ textAlign:"center", padding:"24px 0" }}>
-            <div style={{ fontSize:36, marginBottom:10 }}><Icon name="check-circle" size={42} color={G.mid}/></div>
-            <div style={{ fontWeight:700, color:G.mid, fontSize:15, fontFamily:"Montserrat" }}>Report requested</div>
-            <div style={{ color:G.muted, fontSize:12, marginTop:4 }}>
-              We'll prepare your {reqFormat} report and {reqEmail ? `email it to ${reqEmail}` : "make it available shortly"}.
-            </div>
-          </div>
-        )}
-      </Card>
-      )}
     </div>
   );
 }
@@ -1664,20 +1592,6 @@ export default function WastePortal() {
           )}
         </div>
 
-        {/* Collapse toggle (desktop / tablet) */}
-        {!isMobile && (
-          <button onClick={() => setCollapsed(c => !c)} aria-label={col ? "Expand sidebar" : "Collapse sidebar"}
-            className="btn wm-tipwrap" style={{ display:"flex", alignItems:"center",
-              justifyContent: col ? "center" : "flex-start", gap:9, background:"transparent", border:"none",
-              borderBottom:`1px solid ${T.sbBorder}`, color:T.sbMuted, cursor:"pointer",
-              padding: col ? "11px 0" : "11px 18px", fontSize:11, fontWeight:700, letterSpacing:0.4,
-              textTransform:"uppercase", fontFamily:"'Open Sans', sans-serif", position:"relative" }}>
-            <Icon name={col ? "panel-right" : "panel-left"} size={18}/>
-            {!col && <span>Collapse</span>}
-            {col && <span className="wm-tip">Expand sidebar</span>}
-          </button>
-        )}
-
         {/* Customer / profile */}
         <div style={{ padding: col ? "12px 0" : "14px 16px", borderBottom:`1px solid ${T.sbBorder}`,
           display:"flex", justifyContent: col ? "center" : "stretch" }}>
@@ -1762,6 +1676,17 @@ export default function WastePortal() {
             )}
           </div>
         </nav>
+
+        {/* Collapse / expand toggle — icon only, bottom of sidebar (desktop / tablet) */}
+        {!isMobile && (
+          <button onClick={() => setCollapsed(c => !c)} aria-label={col ? "Expand sidebar" : "Collapse sidebar"}
+            className="btn wm-tipwrap" style={{ display:"flex", alignItems:"center", justifyContent:"center",
+              background:"transparent", border:"none", borderTop:`1px solid ${T.sbBorder}`, color:T.sbMuted,
+              cursor:"pointer", padding:"12px 0", position:"relative" }}>
+            <Icon name={col ? "panel-right" : "panel-left"} size={19}/>
+            <span className="wm-tip">{col ? "Expand sidebar" : "Collapse sidebar"}</span>
+          </button>
+        )}
 
         {!col && (
           <div style={{ padding:"12px 14px", borderTop:`1px solid ${T.sbBorder}` }}>
