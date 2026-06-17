@@ -145,6 +145,30 @@ const HISTORY = [
   { id:"T0034", planned:"Mon 23 Feb", actual:"Mon 23 Feb", type:"Recycling",         bin:"240L MGB — #B2105",  status:"On Time",     reason:"",                             dnote:"DN-20260223-034", track:"PO-44603" },
 ];
 
+// Transaction Report — column layout mirrors the WasteMart SAP "Transaction
+// Report" export: identifiers, grouped Service detail, charge breakdown (R),
+// and grouped Disposal weight.
+const TRANSACTIONS = [
+  { date:"09 Mar 2026", serviceNo:"SRV-0041", manifest:"MAN-20260309-041", weighbridge:"WB-104821", po:"PO-44821",
+    service:"General Waste Collection", uom:"Load", qnty:1, waste:"General Waste",
+    transport:"R 650.00", disposal:"R 1,180.00", other:"R 0.00", total:"R 1,830.00", dispUom:"kg", dispWeight:"1,180" },
+  { date:"09 Mar 2026", serviceNo:"SRV-0040", manifest:"MAN-20260309-040", weighbridge:"WB-104822", po:"PO-44821",
+    service:"Recycling Collection", uom:"Load", qnty:1, waste:"Mixed Recycling",
+    transport:"R 480.00", disposal:"R 420.00", other:"R 0.00", total:"R 900.00", dispUom:"kg", dispWeight:"640" },
+  { date:"02 Mar 2026", serviceNo:"SRV-0038", manifest:"MAN-20260302-038", weighbridge:"WB-104655", po:"PO-44712",
+    service:"General Waste Collection", uom:"Load", qnty:1, waste:"General Waste",
+    transport:"R 650.00", disposal:"R 1,205.00", other:"R 0.00", total:"R 1,855.00", dispUom:"kg", dispWeight:"1,205" },
+  { date:"03 Mar 2026", serviceNo:"SRV-0037", manifest:"MAN-20260303-037", weighbridge:"WB-104661", po:"PO-44712",
+    service:"Recycling Collection", uom:"Load", qnty:1, waste:"Mixed Recycling",
+    transport:"R 480.00", disposal:"R 395.00", other:"R 120.00", total:"R 995.00", dispUom:"kg", dispWeight:"605" },
+  { date:"23 Feb 2026", serviceNo:"SRV-0035", manifest:"MAN-20260223-035", weighbridge:"WB-104498", po:"PO-44603",
+    service:"General Waste Collection", uom:"Load", qnty:1, waste:"General Waste",
+    transport:"R 650.00", disposal:"R 1,150.00", other:"R 0.00", total:"R 1,800.00", dispUom:"kg", dispWeight:"1,150" },
+  { date:"23 Feb 2026", serviceNo:"SRV-0034", manifest:"MAN-20260223-034", weighbridge:"WB-104499", po:"PO-44603",
+    service:"Recycling Collection", uom:"Load", qnty:1, waste:"Mixed Recycling",
+    transport:"R 480.00", disposal:"R 410.00", other:"R 0.00", total:"R 890.00", dispUom:"kg", dispWeight:"620" },
+];
+
 const INVOICES = [
   { inv:"INV-2026-0312", date:"01 Mar 2026", due:"15 Mar 2026", desc:"March 2026 — Waste Services",     amount:"R 4,850.00",  status:"Unpaid"  },
   { inv:"INV-2026-0289", date:"01 Feb 2026", due:"15 Feb 2026", desc:"February 2026 — Waste Services",  amount:"R 4,850.00",  status:"Paid"    },
@@ -161,9 +185,10 @@ const STATEMENTS = [
 ];
 
 const CONTACTS = [
-  { name:"Nazier Marthinus", role:"Account Manager",     phone:"+27 21 555 0100", email:"nazier@wastemart.co.za"  },
-  { name:"Chantele du Plessis", role:"Finance Queries",  phone:"+27 83 442 2086", email:"chantele@wastemart.co.za"},
-  { name:"Operations Desk",   role:"Service Issues",     phone:"+27 21 555 0199", email:"ops@wastemart.co.za"     },
+  { name:"Support",         role:"General support line",   phone:"+27 86 045 6786", email:""                          },
+  { name:"Sales Team",      role:"Quotes & new services",  phone:"",                email:"sales@wastemart.co.za"      },
+  { name:"Admin Team",      role:"Accounts & billing",     phone:"",                email:"admin@wastemart.co.za"      },
+  { name:"Operations Team", role:"Collections & service",  phone:"",                email:"operations@wastemart.co.za" },
 ];
 
 // ── Data freshness ────────────────────────────────────────────────────────────
@@ -422,32 +447,67 @@ function HistoryTab() {
           </div>
         </div>
 
-        <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
-          <thead>
-            <tr>
-              {["Ref","Tracking / PO #","Service Type","Bin / Location","Date","D-Note"].map(h => (
-                <th key={h} style={{ textAlign:"left", padding:"6px 8px", color:G.muted,
-                  fontWeight:700, fontSize:10, textTransform:"uppercase", letterSpacing:0.8,
-                  borderBottom:`2px solid ${G.hairline}` }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {HISTORY.map((r, i) => (
-              <tr key={r.id} className="hover-row" style={{ background: i%2===0 ? G.white : G.bg }}>
-                <td style={{ padding:"10px 8px", color:G.muted, fontFamily:"monospace", fontSize:11 }}>{r.id}</td>
-                <td style={{ padding:"10px 8px", color:G.slate, fontFamily:"monospace", fontSize:11, fontWeight:600 }}>{r.track}</td>
-                <td style={{ padding:"10px 8px", color:G.charcoal, fontWeight:600 }}>{r.type}</td>
-                <td style={{ padding:"10px 8px", color:G.muted, fontSize:11 }}>{r.bin}</td>
-                <td style={{ padding:"10px 8px", color:G.slate }}>{r.actual}</td>
-                <td style={{ padding:"10px 8px" }}><DownloadBtn/></td>
-              </tr>
-            ))}
-          </tbody>
-        </table></div>
+        {(() => {
+          const cols = [
+            { key:"date",        label:"Date" },
+            { key:"serviceNo",   label:"Service Number",  mono:true },
+            { key:"manifest",    label:"Manifest",        mono:true },
+            { key:"weighbridge", label:"Weighbridge",     mono:true },
+            { key:"po",          label:"PO Number",       mono:true },
+            { key:"service",     label:"Service",         strong:true },
+            { key:"uom",         label:"UOM" },
+            { key:"qnty",        label:"Qnty",            num:true },
+            { key:"waste",       label:"Waste" },
+            { key:"transport",   label:"Transport",       num:true },
+            { key:"disposal",    label:"Disposal",        num:true },
+            { key:"other",       label:"Other",           num:true },
+            { key:"total",       label:"Total",           num:true, strong:true },
+            { key:"dispUom",     label:"UOM" },
+            { key:"dispWeight",  label:"Disposal Weight", num:true },
+          ];
+          const grpCell = { textAlign:"center", padding:"6px 8px", color:G.mid, fontWeight:800,
+            fontSize:10, textTransform:"uppercase", letterSpacing:0.8, background:G.pale,
+            borderBottom:`1px solid ${G.hairline}`, whiteSpace:"nowrap" };
+          return (
+            <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:1180 }}>
+              <thead>
+                {/* Group headers — mirror the SAP report's "Service" and "Disposal" groupings */}
+                <tr>
+                  <th colSpan={5}/>
+                  <th colSpan={4} style={grpCell}>Service</th>
+                  <th colSpan={4}/>
+                  <th colSpan={2} style={grpCell}>Disposal</th>
+                </tr>
+                <tr>
+                  {cols.map(c => (
+                    <th key={c.key} style={{ textAlign: c.num ? "right" : "left", padding:"5px 8px",
+                      color:G.muted, fontWeight:700, fontSize:10, textTransform:"uppercase", letterSpacing:0.8,
+                      borderBottom:`2px solid ${G.hairline}`, whiteSpace:"nowrap" }}>{c.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {TRANSACTIONS.map((r, i) => (
+                  <tr key={r.serviceNo} className="hover-row" style={{ background: i%2===0 ? G.white : G.bg }}>
+                    {cols.map(c => (
+                      <td key={c.key} style={{ padding:"9px 8px", whiteSpace:"nowrap",
+                        textAlign: c.num ? "right" : "left",
+                        fontFamily: c.mono ? "monospace" : "inherit",
+                        fontSize: c.mono ? 11 : 12,
+                        fontWeight: c.strong ? 700 : (c.mono ? 600 : 400),
+                        color: c.strong ? G.charcoal : G.slate }}>
+                        {r[c.key]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table></div>
+          );
+        })()}
 
         <div style={{ marginTop:14, padding:"12px 14px", background:G.bg, borderRadius:8, fontSize:12, color:G.muted, display:"flex", gap:24, flexWrap:"wrap" }}>
-          <span><strong style={{ color:G.charcoal }}>Total shown:</strong> {HISTORY.length} transactions</span>
+          <span><strong style={{ color:G.charcoal }}>Total shown:</strong> {TRANSACTIONS.length} transactions</span>
           <span style={{ marginLeft:"auto" }}>Data retained for 3 years · <span style={{ color:G.mid, cursor:"pointer" }}>Request older records →</span></span>
         </div>
       </Card>
@@ -749,7 +809,7 @@ function SupportTab() {
       {/* Contact us */}
       {sub===1 && (
       <div style={{ display:"flex", gap:18, flexWrap:"wrap", alignItems:"flex-start" }}>
-        <Card style={{ flex:"2 1 300px" }}>
+        <Card style={{ flex:"1 1 100%" }}>
           <SectionTitle>Your Contacts</SectionTitle>
           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
             {CONTACTS.map((c, i) => (
@@ -762,19 +822,20 @@ function SupportTab() {
                     <div style={{ fontSize:11, color:G.muted }}>{c.role}</div>
                   </div>
                 </div>
-                <div style={{ fontSize:11, color:G.mid, paddingLeft:44 }}><Icon name="phone" size={12} style={{ display:"inline-block", verticalAlign:"-1px", marginRight:5 }}/> {c.phone}</div>
-                <div style={{ fontSize:11, color:G.mid, paddingLeft:44, marginTop:2 }}><Icon name="mail" size={12} style={{ display:"inline-block", verticalAlign:"-1px", marginRight:5 }}/> {c.email}</div>
+                {c.phone && (
+                  <div style={{ fontSize:11, color:G.mid, paddingLeft:44 }}>
+                    <Icon name="phone" size={12} style={{ display:"inline-block", verticalAlign:"-1px", marginRight:5 }}/>
+                    <a href={`tel:${c.phone.replace(/\s/g,"")}`} style={{ color:G.mid, textDecoration:"none" }}>{c.phone}</a>
+                  </div>
+                )}
+                {c.email && (
+                  <div style={{ fontSize:11, color:G.mid, paddingLeft:44, marginTop:2 }}>
+                    <Icon name="mail" size={12} style={{ display:"inline-block", verticalAlign:"-1px", marginRight:5 }}/>
+                    <a href={`mailto:${c.email}`} style={{ color:G.mid, textDecoration:"none" }}>{c.email}</a>
+                  </div>
+                )}
               </div>
             ))}
-          </div>
-        </Card>
-
-        <Card style={{ flex:"1 1 220px" }}>
-          <SectionTitle>Emergency Line</SectionTitle>
-          <div style={{ textAlign:"center", padding:"10px 0" }}>
-            <div style={{ fontSize:28, marginBottom:6 }}><Icon name="alert" size={30}/></div>
-            <div style={{ fontSize:20, fontWeight:800, color:G.mid, fontFamily:"Montserrat" }}>+27 21 555 0199</div>
-            <div style={{ fontSize:11, color:G.muted, marginTop:4 }}>24/7 · Hazardous waste &amp; urgent collections</div>
           </div>
         </Card>
       </div>
@@ -810,6 +871,7 @@ function BookingModal({ onClose }) {
   const [type, setType] = useState("");
   const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   const serviceTypes = [
     { icon:"trash", label:"General Waste Collection" },
@@ -833,7 +895,7 @@ function BookingModal({ onClose }) {
               BOOK A SERVICE
             </div>
             <div style={{ color:G.white, fontSize:16, fontWeight:800, fontFamily:"Montserrat" }}>
-              {step===1 ? "Select Service Type" : step===2 ? "Choose a Date" : "Confirm Booking"}
+              {submitted ? "Request Received" : step===1 ? "Select Service Type" : step===2 ? "Choose a Date" : "Confirm Booking"}
             </div>
           </div>
           <button onClick={onClose} style={{ background:"rgba(255,255,255,0.15)", border:"none",
@@ -842,6 +904,7 @@ function BookingModal({ onClose }) {
         </div>
 
         {/* Progress */}
+        {!submitted && (
         <div style={{ display:"flex", background:G.pale }}>
           {["Service","Date","Confirm"].map((s,i) => (
             <div key={s} style={{ flex:1, padding:"8px", textAlign:"center", fontSize:10, fontWeight:700,
@@ -851,9 +914,25 @@ function BookingModal({ onClose }) {
             </div>
           ))}
         </div>
+        )}
 
         <div style={{ padding:"20px" }}>
-          {step===1 && (
+          {submitted && (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:14, padding:"6px 0 4px" }}>
+              <Icon name="check-circle" size={48} color={G.mid}/>
+              <div style={{ fontSize:16, fontWeight:800, color:G.charcoal, fontFamily:"Montserrat" }}>Thank you for your request</div>
+              <div style={{ background:G.pale, border:`1px solid ${G.paleMid}`, borderRadius:10,
+                padding:"14px 16px", fontSize:12.5, color:G.slate, lineHeight:1.55 }}>
+                Thank you for your request for service. Your service will be scheduled subject to available
+                capacity and the conditions of your quote.
+              </div>
+              <button onClick={onClose} className="btn" style={{ width:"100%", background:G.mid, color:G.white,
+                border:"none", borderRadius:8, padding:"11px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                Done
+              </button>
+            </div>
+          )}
+          {!submitted && step===1 && (
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {serviceTypes.map(s => (
                 <div key={s.label} onClick={() => setType(s.label)} style={{
@@ -876,7 +955,7 @@ function BookingModal({ onClose }) {
             </div>
           )}
 
-          {step===2 && (
+          {!submitted && step===2 && (
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
               <div style={{ fontSize:12, color:G.muted, marginBottom:4 }}>
                 <strong style={{ color:G.charcoal }}>Service:</strong> {type}
@@ -914,7 +993,7 @@ function BookingModal({ onClose }) {
             </div>
           )}
 
-          {step===3 && (
+          {!submitted && step===3 && (
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
               <div style={{ background:G.pale, borderRadius:10, padding:"14px 16px",
                 border:`1px solid ${G.paleMid}` }}>
@@ -941,7 +1020,7 @@ function BookingModal({ onClose }) {
                   borderRadius:8, padding:"10px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
                   ← Back
                 </button>
-                <button onClick={onClose} className="btn" style={{
+                <button onClick={() => setSubmitted(true)} className="btn" style={{
                   flex:2, background:G.mid, color:G.white, border:"none",
                   borderRadius:8, padding:"10px", fontSize:13, fontWeight:700, cursor:"pointer" }}>
                   <Icon name="check" size={15}/> Submit Booking
