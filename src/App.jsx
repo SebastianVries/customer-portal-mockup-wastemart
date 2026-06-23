@@ -545,6 +545,9 @@ function DocumentsTab() {
   const dnotes = HISTORY.map(r => ({
     ref: r.dnote, date: r.actual, type: r.type, bin: r.bin, status: r.status
   }));
+  const disposalSlips = HISTORY.map(r => ({
+    ref: r.dnote.replace("DN-", "SDC-"), date: r.actual, type: r.type, bin: r.bin
+  }));
 
   const customerDocs = [
     { name:"Service Agreement — Wastemart CP Prototype", date:"Jan 2024", type:"Contract" },
@@ -562,9 +565,9 @@ function DocumentsTab() {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <SubTabs tabs={["Customer-Specific","Generic"]} active={sub} onChange={setSub}/>
+      <SubTabs tabs={["Delivery Notes","Safe Disposal Slips","Contract & Accounts","WasteMart Generic"]} active={sub} onChange={setSub}/>
 
-      {sub===0 && <>
+      {sub===0 && (
         <Card>
           <SectionTitle action={
             <div style={{ display:"flex", gap:8 }}>
@@ -609,7 +612,56 @@ function DocumentsTab() {
             </button>
           </div>
         </Card>
+      )}
 
+      {sub===1 && (
+        <Card>
+          <SectionTitle action={
+            <div style={{ display:"flex", gap:8 }}>
+              <input placeholder="Search documents..." style={{
+                border:`1px solid ${G.hairline}`, borderRadius:8, padding:"6px 12px",
+                fontSize:12, color:G.charcoal, outline:"none", width:180 }}/>
+            </div>
+          }>
+            Safe Disposal Slips
+          </SectionTitle>
+          <p style={{ fontSize:12, color:G.muted, marginBottom:16 }}>
+            Certificates confirming each load was disposed of at a licensed facility. Download individual slips or request a bulk export.
+          </p>
+          <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+            {disposalSlips.map((d, i) => (
+              <div key={d.ref} className="doc-row" style={{
+                display:"flex", alignItems:"center", justifyContent:"space-between",
+                padding:"12px 12px", borderRadius:8, gap:12, flexWrap:"wrap",
+                borderBottom: i < disposalSlips.length-1 ? `1px solid ${G.hairline}` : "none" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:12, flex:1, minWidth:200 }}>
+                  <div style={{ width:36, height:36, borderRadius:8, background:G.pale,
+                    display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>
+                    <Icon name="file" size={18} color={G.mid}/>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, color:G.charcoal, fontFamily:"monospace" }}>{d.ref}</div>
+                    <div style={{ fontSize:11, color:G.muted, marginTop:1 }}>{d.type} · {d.bin}</div>
+                  </div>
+                </div>
+                <div style={{ display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
+                  <span style={{ fontSize:11, color:G.muted }}>{d.date}</span>
+                  <DownloadBtn label="PDF"/>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop:16, textAlign:"center" }}>
+            <button className="btn" style={{
+              background:G.pale, color:G.mid, border:`1px solid ${G.paleMid}`,
+              borderRadius:8, padding:"9px 20px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
+              <Icon name="download" size={13} style={{ display:"inline-block", verticalAlign:"-2px", marginRight:3 }}/> Download All Disposal Slips (ZIP)
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {sub===2 && (
         <Card>
           <SectionTitle>Contract &amp; Account Documents</SectionTitle>
           <p style={{ fontSize:12, color:G.muted, marginBottom:14 }}>
@@ -617,9 +669,9 @@ function DocumentsTab() {
           </p>
           <DocList items={customerDocs}/>
         </Card>
-      </>}
+      )}
 
-      {sub===1 && (
+      {sub===3 && (
         <Card>
           <SectionTitle>Company &amp; Compliance Documents</SectionTitle>
           <p style={{ fontSize:12, color:G.muted, marginBottom:14 }}>
@@ -856,10 +908,6 @@ function DataFreshnessBar() {
         <span style={{ width:7, height:7, borderRadius:"50%", background:G.bright, display:"inline-block" }}/>
         <strong style={{ color:G.slate }}>Data current as of:</strong>&nbsp;{DATA_STATUS.lastTransactionShort}
       </span>
-      <span style={{ color:G.hairline, padding:"0 4px" }}>|</span>
-      <span><strong style={{ color:G.slate }}>Invoiced to:</strong>&nbsp;{DATA_STATUS.invoicedTo}</span>
-      <span style={{ color:G.hairline, padding:"0 4px" }}>|</span>
-      <span>Next refresh: {DATA_STATUS.nextSync}</span>
     </div>
   );
 }
@@ -1302,7 +1350,7 @@ function QuoteTab() {
       <Card>
         <SectionTitle>Request a New Quote</SectionTitle>
         <p style={{ fontSize:12, color:G.muted, marginBottom:18 }}>
-          Tell us what you need and our team will prepare a tailored quote. This does not book a service — it starts a quote request.
+          Share your requirements with us, and our team will provide a customised quotation. <strong>Please note that this is a quote request only and does not confirm or book a service.</strong>
         </p>
 
         {!sent ? (
@@ -1331,7 +1379,7 @@ function QuoteTab() {
               <label style={{ fontSize:10, fontWeight:700, color:G.muted, letterSpacing:0.8,
                 textTransform:"uppercase", display:"block", marginBottom:6 }}>Expected frequency</label>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                {["Once-off","Weekly","Fortnightly","Monthly"].map(f => (
+                {["Once-off","Weekly","Fortnightly","Monthly","By Request"].map(f => (
                   <button key={f} onClick={() => setFreq(f)} className="btn" style={{
                     border:"none", borderRadius:8, padding:"8px 16px", fontSize:12, fontWeight:700, cursor:"pointer",
                     background: freq===f ? G.mid : G.pale, color: freq===f ? G.white : G.mid }}>
