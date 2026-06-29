@@ -301,7 +301,7 @@ function Card({ children, style={} }) {
   );
 }
 
-function DownloadBtn({ label="D-Note" }) {
+function DownloadBtn({ label="Manifest" }) {
   const G = useTheme();
   return (
     <button className="btn" style={{
@@ -410,7 +410,7 @@ function OverviewTab({ onBook }) {
         <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:12, minWidth:560 }}>
           <thead>
             <tr>
-              {["Ref","Service Type","Bin","Date","D-Note"].map(h => (
+              {["Ref","Service Type","Bin","Date","Manifest"].map(h => (
                 <th key={h} style={{ textAlign:"left", padding:"5px 8px", color:G.muted,
                   fontWeight:700, fontSize:10, textTransform:"uppercase", letterSpacing:0.8,
                   borderBottom:`2px solid ${G.hairline}` }}>{h}</th>
@@ -565,7 +565,7 @@ function DocumentsTab() {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <SubTabs tabs={["Delivery Notes","Safe Disposal Slips","Contract & Accounts","WasteMart Generic"]} active={sub} onChange={setSub}/>
+      <SubTabs tabs={["Manifests","Safe Disposal Slips","Contract & Accounts","WasteMart Generic"]} active={sub} onChange={setSub}/>
 
       {sub===0 && (
         <Card>
@@ -576,10 +576,10 @@ function DocumentsTab() {
                 fontSize:12, color:G.charcoal, outline:"none", width:180 }}/>
             </div>
           }>
-            Delivery Notes (D-Notes)
+            Manifests
           </SectionTitle>
           <p style={{ fontSize:12, color:G.muted, marginBottom:16 }}>
-            Every completed service generates a signed delivery note. Download individual D-Notes or request a bulk export.
+            Every completed service generates a signed manifest. Download individual manifests or request a bulk export.
           </p>
           <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
             {dnotes.map((d, i) => (
@@ -608,7 +608,7 @@ function DocumentsTab() {
             <button className="btn" style={{
               background:G.pale, color:G.mid, border:`1px solid ${G.paleMid}`,
               borderRadius:8, padding:"9px 20px", fontSize:12, fontWeight:700, cursor:"pointer" }}>
-              <Icon name="download" size={13} style={{ display:"inline-block", verticalAlign:"-2px", marginRight:3 }}/> Download All D-Notes (ZIP)
+              <Icon name="download" size={13} style={{ display:"inline-block", verticalAlign:"-2px", marginRight:3 }}/> Download All Manifests (ZIP)
             </button>
           </div>
         </Card>
